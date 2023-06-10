@@ -4,7 +4,7 @@ library(dplyr)
 ##########################################################
 #PLotting indices
 
-ci<-read.csv("./Data/Climate_Indices.csv", header = TRUE, sep = ",")
+ci<-read.csv("./Data/Climate_Indices_Yearly.csv", header = TRUE, sep = ",")
 
 
 #Assign colour to temperature anomaly direction
