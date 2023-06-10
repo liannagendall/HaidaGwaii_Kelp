@@ -10,11 +10,9 @@ library(zoo)
 #################################################
 ############Bonilla Island SST####################
 ###############################################
-#set directory file to where the lighthouse data is by either using the 'Session' drop down menu or using the setwd(dir) function see https://stat.ethz.ch/R-manual/R-devel/library/base/html/getwd.html for more info
-setwd("C:/Users/genda/Dropbox/Kelp Data & Questions/Data/SST Lighthouses/DATA_-_Active_Sites2022/DATA_-_Active_Sites/Bonilla_Point")
 
 #Import the data as downloaded directly from the BC lighthouses website, skipping the first few rows which have some random meta-data; the exact number of lines to skip may vary depending on dataset 
-temp.bon <- read_csv( "Bonilla_Island_-_Daily_Sea_Surface_Temperature_and_Salinity_1960-2021.csv",
+temp.bon <- read_csv( "./Data/Bonilla_Island_-_Daily_Sea_Surface_Temperature_and_Salinity_1960-2021.csv",
                       skip=0 )
 #Look at data (now a tiblle)
 temp.bon 
@@ -114,45 +112,9 @@ title(xlab ="Year", line=3, cex.lab=2)
 #lines(movavg(temp.bon.byGroup$avgAnomaly, 4, type="s"),lwd=2,lty=1)
 
 
-write.csv(temp.bon.byGroup, 'SST_YearlyJAAnomaly.csv')
+#write.csv(temp.bon.byGroup, 'SST_YearlyJAAnomaly.csv')
 
 
-########################
-#SST anomalies  growing season (march to august)
-##########################
-
-temp.bon.RockyTime <- read_csv( "SST_YearlyAnomaly_G.csv",
-                                skip=0 )
-
-temp.bon.RockyTime$Group <- rep(1:55, each = 6)
-
-
-temp.bon.byGroup <- temp.bon.RockyTime %>%
-  group_by(Group) %>%
-  summarize(avgAnomaly = mean(Anomaly))
-
-temp.bon.byGroup $Year_end <- c(1967:2021)
-
-for (i in 1:length(temp.bon.byGroup$avgAnomaly)) {
-  if (temp.bon.byGroup$avgAnomaly[i] > 0) {
-    temp.bon.byGroup$col[i]<-"#B51D2C"
-  } else {
-    temp.bon.byGroup$col[i]<-"#296BA8"
-  }
-}
-
-
-##Plot SST anomalies by year through time
-par(mar=c(4,4,1,1))
-par(mfrow=c(1,1))
-barplot(temp.bon.byGroup$avgAnomaly, col=temp.bon.byGroup$col, ylim=c(-1.5,1.5), cex.axis=1.5, space=0.5, border=TRUE, las=1, width=.66, xlim=c(0,55))
-title(ylab=expression(paste("SST Anomalies")), line=4, cex.lab=2)
-axis(1, at=seq(0,55,1), labels = seq(1967,2022,1),  cex.axis=0.6, las = 2)
-title(xlab ="Year", line=3, cex.lab=2)
-#lines(movavg(temp.bon.byGroup$avgAnomaly, 4, type="s"),lwd=2,lty=1)
-
-
-write.csv(temp.bon.byGroup, 'SST_YearlyAnomalyGrowing.csv')
 
 
 
@@ -179,3 +141,40 @@ title(ylab=expression(paste("SST Anomalies")), line=4, cex.lab=2)
 axis(1, at=seq(0,55,1), labels = seq(1967,2022,1),  cex.axis=0.6, las = 2)
 title(xlab ="Year", line=3, cex.lab=2)
 
+
+########################
+#SST anomalies  growing season (march to august)
+##########################
+# 
+# temp.bon.RockyTime <- read_csv( "SST_YearlyAnomaly_G.csv",
+#                                 skip=0 )
+# 
+# temp.bon.RockyTime$Group <- rep(1:55, each = 6)
+# 
+# 
+# temp.bon.byGroup <- temp.bon.RockyTime %>%
+#   group_by(Group) %>%
+#   summarize(avgAnomaly = mean(Anomaly))
+# 
+# temp.bon.byGroup $Year_end <- c(1967:2021)
+# 
+# for (i in 1:length(temp.bon.byGroup$avgAnomaly)) {
+#   if (temp.bon.byGroup$avgAnomaly[i] > 0) {
+#     temp.bon.byGroup$col[i]<-"#B51D2C"
+#   } else {
+#     temp.bon.byGroup$col[i]<-"#296BA8"
+#   }
+# }
+# 
+# 
+# ##Plot SST anomalies by year through time
+# par(mar=c(4,4,1,1))
+# par(mfrow=c(1,1))
+# barplot(temp.bon.byGroup$avgAnomaly, col=temp.bon.byGroup$col, ylim=c(-1.5,1.5), cex.axis=1.5, space=0.5, border=TRUE, las=1, width=.66, xlim=c(0,55))
+# title(ylab=expression(paste("SST Anomalies")), line=4, cex.lab=2)
+# axis(1, at=seq(0,55,1), labels = seq(1967,2022,1),  cex.axis=0.6, las = 2)
+# title(xlab ="Year", line=3, cex.lab=2)
+# #lines(movavg(temp.bon.byGroup$avgAnomaly, 4, type="s"),lwd=2,lty=1)
+# 
+# 
+# write.csv(temp.bon.byGroup, 'SST_YearlyAnomalyGrowing.csv')

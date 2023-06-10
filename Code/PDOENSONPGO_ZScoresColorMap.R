@@ -7,19 +7,11 @@ library(pals)
 library(wesanderson)
 library(tidyverse)
 
-setwd("C:/Users/genda/Dropbox/Kelp Data & Questions/Data/TimeSeriesAnalysis")
 
-
-ENSO <- read.table("ENSO_wide.csv", header = TRUE, sep = ",")
-
-ENSO_long <- ENSO %>%
-  gather("year", "month", 2:13)
-
-write.csv(ENSO_long, "ENSO_long.csv")
 
 #Ocean Oscillations TS #######
-osc <- read.table("indices.csv", header = TRUE, sep = ",")
 
+osc <-read.csv("./Data/Climate_Indices_Monthly.csv", header = TRUE, sep = ",")
 
 
 #### z-scores for indices, classification in colorbars  ##########
@@ -45,29 +37,26 @@ myvars <- c("year", "zscore.PDO", "zscore.ENSO", "zscore.NPGO")
 
 zscores  <- newosc[myvars] #use only the indices you need 
 
-#write.csv(zscores, "zscores.csv")
-
-zscores <- read.table("zscores.csv", header = TRUE, sep = ",")
 
 zscores$zscore.NPGO <- zscores$zscore.NPGO*-1
 
-zscores$Group <- rep(1:53, each = 12)
+zscores1 <- zscores[8:643,]
 
+zscores1$Group <- rep(1:53, each = 12)
 
-
-PDOmean <- zscores %>%
+PDOmean <- zscores1 %>%
   group_by(Group) %>%
   summarise_at(vars(zscore.PDO), list(PDOmean = mean))
 
 PDOmean$year <- c(1969:2021)
 
-ENSOmean <- zscores %>%
+ENSOmean <- zscores1 %>%
   group_by(Group) %>%
   summarise_at(vars(zscore.ENSO), list(ENSOmean = mean))
 
 ENSOmean$year <- c(1969:2021)
 
-NPGOmean <- zscores %>%
+NPGOmean <- zscores1 %>%
   group_by(Group) %>%
   summarise_at(vars(zscore.NPGO), list(NPGOmean = mean))
 
@@ -89,8 +78,8 @@ plot <- ggplot(zscores.m, aes(x = year, y = value, fill=variable)) +
 plot
 
 
-plot +  jpeg("Zscore_osc.jpeg", units="in", width=9, height=3, res=300)
-dev.off()
+#plot +  jpeg("Zscore_osc.jpeg", units="in", width=9, height=3, res=300)
+#dev.off()
 
 findInterval(zscores.m$value, c(-2, 0, 2))
 
@@ -122,8 +111,8 @@ ggplot(osc.2.m) +
 
 
 
-plot +  jpeg("Zscore_osc.jpeg", units="in", width=9, height=3, res=300)
-dev.off()
+#plot +  jpeg("Zscore_osc.jpeg", units="in", width=9, height=3, res=300)
+#dev.off()
 
 findInterval(zscores.m$value, c(-2, 0, 2))
 
