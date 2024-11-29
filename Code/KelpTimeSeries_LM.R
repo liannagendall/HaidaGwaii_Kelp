@@ -44,7 +44,7 @@ highd <- filter(data, Year > 2004)
 lowc <- filter(clus, Year < 2004)
 highc <- filter(clus, Year > 2004)
 
-clus3 <- filter(clus, Cluster == 2)
+clus3 <- filter(clus, Cluster == 2) #fixing the cluster numbers so they coincide with subregions (the cluster column is from the clustering analysis)
 clus5 <- filter(clus, Cluster == 3)
 clus2 <- filter(clus, Cluster == 4)
 clus4 <- filter(clus, Cluster == 5)
@@ -266,6 +266,7 @@ r.squaredGLMM(mixed.lm)
 
 (P_Area <- ggplot(data, aes(x = Tide, y = Norm_Area)) +
     geom_point() +
+    labs(x = "Tide (m)", y = "Area (%)")+
     geom_smooth(method = "lm"))
 
 #low res
@@ -1802,3 +1803,35 @@ r.squaredGLMM(mixed.lm)
 (P_Area <- ggplot(data, aes(x = Year, y = Bonilla_SSTAnomaly)) +
         geom_point() +
         geom_smooth(method = "lm"))
+
+#Decadal trends lm
+data73_82 <- data[data$Year >= 1973 & data$Year <= 1982, ]
+data83_92 <- data[data$Year >= 1983 & data$Year <= 1992, ]
+data93_02 <- data[data$Year >= 1993 & data$Year <= 2002, ]
+data03_12 <- data[data$Year >= 2003 & data$Year <= 2012, ]
+data13_21 <- data[data$Year >= 2013 & data$Year <= 2022, ]
+
+mixed.lm <- lm(Year ~ Norm_Area, data = data73_82) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Year ~ Norm_Area, data = data83_92) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Year ~ Norm_Area, data = data93_02) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Year ~ Norm_Area, data = data03_12) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Year ~ Norm_Area, data = data13_21) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
