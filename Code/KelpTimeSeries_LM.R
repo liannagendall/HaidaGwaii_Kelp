@@ -12,12 +12,15 @@ library("lattice")
 library(ggplot2)
 library(ggpubr)
 library(raster)
+library(dplyr)
 
-
+setwd("C:/Users/genda/Dropbox/RProjects/HaidaGwaii_Kelp")
 
 data <- read.csv( "./Data/Model_Data_Revised2023.csv", skip=0 )
 
 data <- filter(data, Cluster == 0) #remove total values from clusters
+
+data <- data[, c(1:48)]
 
 data<- na.omit(data) #remove NAs
 
@@ -25,6 +28,8 @@ data$kmarea <- data$Area/1000000
 
 
 clus <- read.csv( "./Data/Model_Data_Revised2023.csv", skip=0 )
+
+clus  <- clus[, c(1:48)]
 
 clus1 <- filter(clus, Cluster == 1)
 
@@ -37,31 +42,13 @@ clus<- na.omit(clus) #remove NAs
 
 clus <- filter(clus, Cluster >1) #remove total values from clusters
 
-
-lowd <- filter(data, Year < 2004)
-highd <- filter(data, Year > 2004)
-
-lowc <- filter(clus, Year < 2004)
-highc <- filter(clus, Year > 2004)
-
 clus3 <- filter(clus, Cluster == 2) #fixing the cluster numbers so they coincide with subregions (the cluster column is from the clustering analysis)
 clus5 <- filter(clus, Cluster == 3)
 clus2 <- filter(clus, Cluster == 4)
 clus4 <- filter(clus, Cluster == 5)
 
 
-lowc3 <- filter(clus3, Year < 2004)
-highc3 <- filter(clus3, Year > 2004)
-lowc5 <- filter(clus5, Year < 2004)
-highc5 <- filter(clus5, Year > 2004)
-lowc2 <- filter(clus2, Year < 2004)
-highc2 <- filter(clus2, Year > 2004)
-lowc4 <- filter(clus4, Year < 2004)
-highc4 <- filter(clus4, Year > 2004)
-
-###################
-#Average norm kelp area, SD and VAR
-#######################
+#Average norm kelp area, SD and VAR####
 
 mean(data$Norm_Area)
 sd(data$Norm_Area)
@@ -93,59 +80,9 @@ sd(clus5$Norm_Area)
 var(clus5$Norm_Area)
 cv(clus5$Norm_Area)
 
-#lowhigh
 
-mean(lowd$Norm_Area)
-sd(lowd$Norm_Area)
-var(lowd$Norm_Area)
-cv(lowd$Norm_Area)
 
-mean(highd$Norm_Area)
-sd(highd$Norm_Area)
-var(highd$Norm_Area)
-cv(highd$Norm_Area)
-
-mean(lowc2$Norm_Area)
-sd(lowc2$Norm_Area)
-var(lowc2$Norm_Area)
-cv(lowc2$Norm_Area)
-
-mean(highc2$Norm_Area)
-sd(highc2$Norm_Area)
-var(highc2$Norm_Area)
-cv(highc2$Norm_Area)
-
-mean(lowc3$Norm_Area)
-sd(lowc3$Norm_Area)
-var(lowc3$Norm_Area)
-cv(lowc3$Norm_Area)
-
-mean(highc3$Norm_Area)
-sd(highc3$Norm_Area)
-var(highc3$Norm_Area)
-cv(highc3$Norm_Area)
-
-mean(lowc4$Norm_Area)
-sd(lowc4$Norm_Area)
-var(lowc4$Norm_Area)
-cv(lowc4$Norm_Area)
-
-mean(highc4$Norm_Area)
-sd(highc4$Norm_Area)
-var(highc4$Norm_Area)
-cv(highc4$Norm_Area)
-
-mean(lowc5$Norm_Area)
-sd(lowc5$Norm_Area)
-var(lowc5$Norm_Area)
-cv(lowc5$Norm_Area)
-
-mean(highc5$Norm_Area)
-sd(highc5$Norm_Area)
-var(highc5$Norm_Area)
-cv(highc5$Norm_Area)
-
-#correlationofkelpclusters
+#Correlation of kelp clusters####
 clusterarea <- read.csv( "./Data/Clusters_NormArea.csv", skip=0 )
 
 clusterarea<- na.omit(clusterarea)
@@ -199,18 +136,19 @@ ggscatter(clusterarea, x = "Clus4", y = "Clus3",
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "Cluster 4", ylab = "Cluster 3")
-#Correlation metrics & trend through time
 
-#PDO
+#Correlation metrics & trend through time###########
+##PDO####
+mixed.lm <- lm(PDO_AJ ~ Year, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
 ggscatter(data, x = "PDO_AJ", y = "ENSO_AJ", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "PDO", ylab = "ENSO")
 
-mixed.lm <- lm(PDO_AJ ~ Year, data = data) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
 ggscatter(data, x = "PDO_AJ", y = "NPGO_AJ", 
           add = "reg.line", conf.int = TRUE, 
@@ -222,7 +160,17 @@ ggscatter(data, x = "PDO_AJ", y = "Bonilla_SSTAnomaly",
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "PDO", ylab = "SST Anomaly")
 
-#ENSO
+ggscatter(data, x = "PDO_AJ", y = "bonlight_MHW_days", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "PDO", ylab = "MHW days")
+
+ggscatter(data, x = "PDO_AJ", y = "bonlight_MHW_cum_int", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "PDO", ylab = "MHW CI")
+
+##ENSO####
 mixed.lm <- lm(ENSO_AJ ~ Year, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
@@ -238,26 +186,63 @@ ggscatter(data, x = "ENSO_AJ", y = "Bonilla_SSTAnomaly",
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "ENSO", ylab = "SST Anomaly")
 
+ggscatter(data, x = "ENSO_AJ", y = "bonlight_MHW_days", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "ENSO", ylab = "MHW days")
+
+ggscatter(data, x = "ENSO_AJ", y = "bonlight_MHW_cum_int", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "ENSO", ylab = "MHW CI")
+
 mixed.lm <- lm(Bonilla_SSTAnomaly ~ Year, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#NPGO
+##NPGO####
 
 mixed.lm <- lm(NPGO_AJ ~ Year, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
+
 ggscatter(data, x = "NPGO_AJ", y = "Bonilla_SSTAnomaly", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
           xlab ="NPGO", ylab = "SST Anomaly")
 
-#ALL LMS 
+ggscatter(data, x = "NPGO_AJ", y = "bonlight_MHW_days", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "NPGO", ylab = "MHW days")
 
-##########Tide
+ggscatter(data, x = "NPGO_AJ", y = "bonlight_MHW_cum_int", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "NPGO", ylab = "MHW CI")
+
+##SST####
+ggscatter(data, x = "Bonilla_SSTAnomaly", y = "bonlight_MHW_days", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "SST Anomaly", ylab = "MHW days")
+
+ggscatter(data, x = "Bonilla_SSTAnomaly", y = "bonlight_MHW_cum_int", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "SST Anomaly", ylab = "MHW CI")
+##MHW days####
+ggscatter(data, x = "bonlight_MHW_days", y = "bonlight_MHW_cum_int", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "MHW days", ylab = "MHW CI")
+
+#ALL LMS#### 
+
+###Tide####
 
 mixed.lm <- lm(Norm_Area ~ Tide, data = data) 
 summary(mixed.lm)
@@ -269,27 +254,9 @@ r.squaredGLMM(mixed.lm)
     labs(x = "Tide (m)", y = "Area (%)")+
     geom_smooth(method = "lm"))
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Year, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-(P_Area <- ggplot(lowd, aes(x = Tide, y = Norm_Area)) +
-    geom_point() +
-    geom_smooth(method = "lm"))
 
-#high res
-mixed.lm <- lm(Norm_Area ~ Year, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-(P_Area <- ggplot(highd, aes(x = Tide, y = Norm_Area)) +
-    geom_point() +
-    geom_smooth(method = "lm"))
-
-##########Resolution
+##Resolution####
 
 mixed.lm <- lm(Norm_Area ~ Res_Number, data = data) 
 summary(mixed.lm)
@@ -300,29 +267,9 @@ r.squaredGLMM(mixed.lm)
     geom_point() +
     geom_smooth(method = "lm"))
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Res_Number, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-(P_Area <- ggplot(lowd, aes(x = Res_Number, y = Norm_Area)) +
-    geom_point() +
-    geom_smooth(method = "lm"))
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Res_Number, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-(P_Area <- ggplot(highd, aes(x = Res_Number, y = Norm_Area)) +
-    geom_point() +
-    geom_smooth(method = "lm"))
-
-###########Total Area
-#################################################################
-#YEAR
+#Total Area####
+##YEAR####
 mixed.lm <- lm(Norm_Area ~ Year, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
@@ -331,264 +278,126 @@ r.squaredGLMM(mixed.lm)
 (P_Area <- ggplot(data, aes(x = Year, y = Norm_Area)) +
     geom_point() +
     geom_smooth(method = "lm"))
-
-#low res
-mixed.lm <- lm(Norm_Area ~ Year, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Year, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-
-#################################################################
-#SST Year 1
+ 
+##SST Year 1####
 mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 2####
 mixed.lm <- lm(Norm_Area ~ SST1 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST1, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST1, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 2####
 mixed.lm <- lm(Norm_Area ~ SST2 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ SST2, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST2, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST GA Year 1
+ 
+##SST GA Year 1####
 mixed.lm <- lm(Norm_Area ~ SST_GA , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#PDO Year 1
+##PDO Year 1####
 mixed.lm <- lm(Norm_Area ~ PDO_AJ , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO1 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO2 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#ENSO Year 1
+##ENSO Year 1####
 mixed.lm <- lm(Norm_Area ~ ENSO_AJ , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO1 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO2 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#NPGO Year 1
+ 
+##NPGO Year 1####
 mixed.lm <- lm(Norm_Area ~ NPGO_AJ , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO1 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = lowd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = highd) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 3####
 mixed.lm <- lm(Norm_Area ~ NPGO2 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = lowd) 
+##MHW Days Year 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = highd) 
+##MHW Days Year 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days1 , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-################################################
-#multivariate model
+##MHW Days Year 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days2 , data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int , data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int1 , data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int2 , data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+
+##multivariate model####
 
 mixed.lm <- lm(Norm_Area ~ ENSO_AJ + PDO_AJ, data = data) 
 summary(mixed.lm)
@@ -599,6 +408,32 @@ mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly + ENSO_AJ, data = data)
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly + bonlight_MHW_days1, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly + bonlight_MHW_cum_int1, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days2 + ENSO_AJ, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int2 + ENSO_AJ, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int + ENSO_AJ + Bonilla_SSTAnomaly, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
 
 mixed.lm <- lm(Norm_Area ~ ENSO_AJ + SST1, data = data) 
 summary(mixed.lm)
@@ -615,12 +450,13 @@ summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-mixed.lm <- lm(Norm_Area ~ PDO_AJ + Year, data = data) 
+
+mixed.lm <- lm(Norm_Area ~ PDO_AJ + bonlight_MHW_days, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-mixed.lm <- lm(Norm_Area ~ Year + SST1, data = data) 
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days + SST1, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
@@ -653,274 +489,129 @@ r.squaredGLMM(mixed.lm)
 
 
 
-
-
-
-
-
-
-
-#CLUSTER 2
-#################################################################
-#YEAR
+#CLUSTER 2####
+ 
+##YEAR####
 mixed.lm <- lm(Norm_Area ~ Year, data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ Year, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Year, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST Year 1
+ 
+##SST Year 1####
 mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 2####
 mixed.lm <- lm(Norm_Area ~ SST1 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST1, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST1, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 3
+##SST Year 3####
 mixed.lm <- lm(Norm_Area ~ SST2 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ SST2, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST2, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST GA Year 1
+ 
+##SST GA Year 1####
 mixed.lm <- lm(Norm_Area ~ SST_GA , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#PDO Year 1
+ 
+##PDO Year 1####
 mixed.lm <- lm(Norm_Area ~ PDO_AJ , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO1 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO2 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#ENSO Year 1
+ 
+##ENSO Year 1####
 mixed.lm <- lm(Norm_Area ~ ENSO_AJ , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO1 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO2 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#NPGO Year 1
+ 
+##NPGO Year 1####
 mixed.lm <- lm(Norm_Area ~ NPGO_AJ , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO1 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = lowc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = highc2) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO2 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = lowc2) 
+##MHW Days Year 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = highc2) 
+##MHW Days Year 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days1 , data = clus2) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-######################Multivariate models
+##MHW Days Year 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days2 , data = clus2) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int , data = clus2) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int1 , data = clus2) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int2 , data = clus2) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+#Multivariate models####
 
 mixed.lm <- lm(Norm_Area ~ ENSO2 + Bonilla_SSTAnomaly, data = clus2) 
 summary(mixed.lm)
@@ -938,268 +629,142 @@ AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
 
-#CLUSTER 3
-###########################################################################
-#YEAR
+#CLUSTER 3####
+##YEAR####
 mixed.lm <- lm(Norm_Area ~ Year, data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Year, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ Year, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST Year 1
+ 
+##SST Year 1####
 mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 2####
 mixed.lm <- lm(Norm_Area ~ SST1 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST1, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST1, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 3
+##SST Year 3####
 mixed.lm <- lm(Norm_Area ~ SST2 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST2, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ SST2, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST GA Year 1
+ 
+##SST GA Year 1####
 mixed.lm <- lm(Norm_Area ~ SST_GA , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#PDO Year 1
+ 
+##PDO Year 1####
 mixed.lm <- lm(Norm_Area ~ PDO_AJ , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO1 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 3####
 mixed.lm <- lm(Norm_Area ~ PDO2 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = highc3)
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
 
-#################################################################
-#ENSO Year 1
+ 
+##ENSO Year 1####
 mixed.lm <- lm(Norm_Area ~ ENSO_AJ , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO1 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO2 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
 
-#################################################################
-#NPGO Year 1
+ 
+##NPGO Year 1####
 mixed.lm <- lm(Norm_Area ~ NPGO_AJ , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO1 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = lowc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = highc3) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO2 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = lowc3) 
+
+##MHW Days Year 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = highc3) 
+##MHW Days Year 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days1 , data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-######################Multivariate models
+##MHW Days Year 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days2 , data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int , data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int1 , data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int2 , data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##Multivariate models####
 
 mixed.lm <- lm(Norm_Area ~ PDO_AJ + Bonilla_SSTAnomaly, data = clus3) 
 summary(mixed.lm)
@@ -1229,546 +794,343 @@ summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
+
 mixed.lm <- lm(Norm_Area ~ PDO1 + ENSO1, data = clus3) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
 
-#CLUSTER 4
-###########################################################################
-#YEAR
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int + ENSO_AJ, data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int + ENSO1, data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ PDO_AJ + bonlight_MHW_cum_int , data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days + ENSO_AJ, data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days1 + ENSO1, data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ PDO_AJ + bonlight_MHW_days2 , data = clus3) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+
+
+#CLUSTER 4####
+##YEAR####
 mixed.lm <- lm(Norm_Area ~ Year, data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Year, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Year, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST Year 1
+##SST Year 1####
 mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 2####
 mixed.lm <- lm(Norm_Area ~ SST1 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST1, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST1, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 2####
 mixed.lm <- lm(Norm_Area ~ SST2 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST2, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST2, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST GA Year 1
+##SST GA Year 1####
 mixed.lm <- lm(Norm_Area ~ SST_GA , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#PDO Year 1
+##PDO Year 1####
 mixed.lm <- lm(Norm_Area ~ PDO_AJ , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO1 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO2 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = highc4)
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#ENSO Year 1
+ 
+##ENSO Year 1####
 mixed.lm <- lm(Norm_Area ~ ENSO_AJ , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO1 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO2 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
-
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#NPGO Year 1
+ 
+##NPGO Year 1####
 mixed.lm <- lm(Norm_Area ~ NPGO_AJ , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO1 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = lowc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = highc4) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO2 , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = lowc4) 
+
+##MHW Days Year 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days , data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = highc4) 
+##MHW Days Year 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days1 , data = clus4) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Days Year 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days2 , data = clus4) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int , data = clus4) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int1 , data = clus4) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int2 , data = clus4) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+
+##Multivariate models####
+
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int + ENSO_AJ, data = clus4) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int + ENSO1, data = clus4) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days + ENSO_AJ, data = clus4) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
 
 
-
-
-
-
-
-
-#CLUSTER 5
-###########################################################################
-#YEAR
+#CLUSTER 5####
+##YEAR####
 mixed.lm <- lm(Norm_Area ~ Year, data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Year, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Year, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST Year 1
+##SST Year 1####
 mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ Bonilla_SSTAnomaly, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 2####
 mixed.lm <- lm(Norm_Area ~ SST1 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST1, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST1, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#SST Year 2
+##SST Year 3####
 mixed.lm <- lm(Norm_Area ~ SST2 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST2, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST2, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#SST GA Year 1
+##SST GA Year 1####
 mixed.lm <- lm(Norm_Area ~ SST_GA , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ SST_GA, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#################################################################
-#PDO Year 1
+##PDO Year 1####
 mixed.lm <- lm(Norm_Area ~ PDO_AJ , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO_AJ, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO1 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO1, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#PDO Year 2
+##PDO Year 2####
 mixed.lm <- lm(Norm_Area ~ PDO2 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ PDO2, data = highc5)
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#ENSO Year 1
+##ENSO Year 1####
 mixed.lm <- lm(Norm_Area ~ ENSO_AJ , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO_AJ, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO1 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO1, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#ENSO Year 2
+##ENSO Year 2####
 mixed.lm <- lm(Norm_Area ~ ENSO2 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ ENSO2, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-
-#################################################################
-#NPGO Year 1
+##NPGO Year 1####
 mixed.lm <- lm(Norm_Area ~ NPGO_AJ , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO_AJ, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO1 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = lowc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO1, data = highc5) 
-summary(mixed.lm)
-AICc(mixed.lm)
-r.squaredGLMM(mixed.lm)
-
-#NPGO Year 2
+##NPGO Year 2####
 mixed.lm <- lm(Norm_Area ~ NPGO2 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#low res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = lowc5) 
+
+##MHW Days Year 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#high res
-mixed.lm <- lm(Norm_Area ~ NPGO2, data = highc5) 
+##MHW Days Year 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days1 , data = clus5) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-#####################################
-#Climate indices N SST trends
+##MHW Days Year 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_days2 , data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
 
-mixed.lm <- lm(Year ~ PDO_AJ, data = data) 
+##MHW Cum Int 1####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int , data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 2####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int1 , data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##MHW Cum Int 3####
+mixed.lm <- lm(Norm_Area ~ bonlight_MHW_cum_int2 , data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+##Multivariate models####
+mixed.lm <- lm(Norm_Area ~ PDO_AJ + ENSO_AJ, data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ PDO1 + ENSO_AJ, data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ PDO2 + ENSO_AJ, data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ PDO_AJ + ENSO1, data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+mixed.lm <- lm(Norm_Area ~ PDO_AJ + ENSO2, data = clus5) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+#Climate indices N SST trends####
+mixed.lm <- lm(PDO_AJ ~ Year, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
@@ -1777,7 +1139,7 @@ r.squaredGLMM(mixed.lm)
         geom_point() +
         geom_smooth(method = "lm"))
 
-mixed.lm <- lm(Year ~ ENSO_AJ, data = data) 
+mixed.lm <- lm(ENSO_AJ ~ Year, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
@@ -1786,7 +1148,7 @@ r.squaredGLMM(mixed.lm)
         geom_point() +
         geom_smooth(method = "lm"))
 
-mixed.lm <- lm(Year ~ NPGO_AJ, data = data) 
+mixed.lm <- lm(NPGO_AJ ~ Year , data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
@@ -1795,7 +1157,7 @@ r.squaredGLMM(mixed.lm)
         geom_point() +
         geom_smooth(method = "lm"))
 
-mixed.lm <- lm(Year ~ Bonilla_SSTAnomaly, data = data) 
+mixed.lm <- lm(Bonilla_SSTAnomaly ~ Year, data = data) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
@@ -1804,34 +1166,140 @@ r.squaredGLMM(mixed.lm)
         geom_point() +
         geom_smooth(method = "lm"))
 
-#Decadal trends lm
+mixed.lm <- lm(bonlight_MHW_days ~ Year, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+(P_Area <- ggplot(data, aes(x = Year, y = bonlight_MHW_days)) +
+        geom_point() +
+        geom_smooth(method = "lm"))
+
+mixed.lm <- lm(bonlight_MHW_cum_int ~ Year, data = data) 
+summary(mixed.lm)
+AICc(mixed.lm)
+r.squaredGLMM(mixed.lm)
+
+(P_Area <- ggplot(data, aes(x = Year, y = bonlight_cum_int)) +
+        geom_point() +
+        geom_smooth(method = "lm"))
+
+
+#Decadal trends lm####
 data73_82 <- data[data$Year >= 1973 & data$Year <= 1982, ]
 data83_92 <- data[data$Year >= 1983 & data$Year <= 1992, ]
 data93_02 <- data[data$Year >= 1993 & data$Year <= 2002, ]
 data03_12 <- data[data$Year >= 2003 & data$Year <= 2012, ]
 data13_21 <- data[data$Year >= 2013 & data$Year <= 2022, ]
 
-mixed.lm <- lm(Year ~ Norm_Area, data = data73_82) 
+mixed.lm <- lm(Norm_Area ~ Year, data = data73_82) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-mixed.lm <- lm(Year ~ Norm_Area, data = data83_92) 
+mixed.lm <- lm(Norm_Area ~ Year , data = data83_92) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-mixed.lm <- lm(Year ~ Norm_Area, data = data93_02) 
+mixed.lm <- lm(Norm_Area ~ Year , data = data93_02) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-mixed.lm <- lm(Year ~ Norm_Area, data = data03_12) 
+mixed.lm <- lm(Norm_Area ~ Year , data = data03_12) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
 
-mixed.lm <- lm(Year ~ Norm_Area, data = data13_21) 
+mixed.lm <- lm(Norm_Area ~ Year , data = data13_21) 
 summary(mixed.lm)
 AICc(mixed.lm)
 r.squaredGLMM(mixed.lm)
+
+
+#Local Environmental Variables & Persistence####
+
+pers <- read.csv( "./Data/Local_Persistence.csv")
+pers <- na.omit(pers)
+pers$LSAT_SST <- as.numeric(pers$LSAT_SST)
+pers$Fetch <- as.numeric(pers$Fetch)
+
+pers <- pers[pers$Persistence != 0, ]                         
+
+#Depth                
+mixed.lm <- lm(Persistence ~ Depth, data = pers) 
+summary(mixed.lm)
+(P_Area <- ggplot(pers, aes(x = Depth, y = Persistence)) +
+    geom_point() +
+    geom_smooth(method = "lm"))
+AICc(mixed.lm)
+
+#SST landsat                 
+mixed.lm <- lm(Persistence ~ LSAT_SST, data = pers) 
+summary(mixed.lm)
+(P_Area <- ggplot(pers, aes(x = LSAT_SST, y = Persistence)) +
+        geom_point() +
+        geom_smooth(method = "lm"))
+AICc(mixed.lm)
+
+#Fetch
+mixed.lm <- lm( Persistence ~ Fetch, data = pers) 
+summary(mixed.lm)
+(P_Area <- ggplot(pers, aes(x = Fetch, y = Persistence)) +
+        geom_point() +
+        geom_smooth(method = "lm"))
+AICc(mixed.lm)
+
+#Wind
+mixed.lm <- lm(Persistence ~ Wind, data = pers) 
+summary(mixed.lm)
+(P_Area <- ggplot(pers, aes(x = Wind, y = Persistence)) +
+        geom_point() +
+        geom_smooth(method = "lm"))
+AICc(mixed.lm)
+
+#Tidal Current
+mixed.lm <- lm(Persistence ~ Tidal_Current, data = pers) 
+summary(mixed.lm)
+(P_Area <- ggplot(pers, aes(x = Tidal_Current, y = Persistence)) +
+        geom_point() +
+        geom_smooth(method = "lm"))
+AICc(mixed.lm)
+
+#Multi
+mixed.lm <- lm(Persistence  ~ Wind + Tidal_Current, data = pers) 
+summary(mixed.lm)
+AICc(mixed.lm)
+
+mixed.lm <- lm(Persistence  ~ LSAT_SST + Tidal_Current, data = pers) 
+summary(mixed.lm)
+AICc(mixed.lm)
+
+mixed.lm <- lm(Persistence  ~ Wind + LSAT_SST + Tidal_Current + Depth, data = pers) 
+summary(mixed.lm)
+AICc(mixed.lm)
+
+mixed.lm <- lm(Persistence  ~ Wind + LSAT_SST + Depth, data = pers) 
+summary(mixed.lm)
+AICc(mixed.lm)
+
+
+##Summarize local conditions by subregion######
+
+# Summarize mean and standard deviation by Cluster
+summary_by_cluster <- pers %>%
+  group_by(Cluster) %>%
+  summarize(
+    Mean_LSAT_SST = mean(LSAT_SST, na.rm = TRUE),
+    SD_LSAT_SST = sd(LSAT_SST, na.rm = TRUE),
+    Mean_Wind = mean(Wind, na.rm = TRUE),
+    SD_Wind = sd(Wind, na.rm = TRUE),
+    Mean_Fetch = mean(Fetch, na.rm = TRUE),
+    SD_Fetch = sd(Fetch, na.rm = TRUE),
+    Mean_Tidal_Current = mean(Tidal_Current, na.rm = TRUE),
+    SD_Tidal_Current = sd(Tidal_Current, na.rm = TRUE)
+  )
+
+# View the summary table
+print(summary_by_cluster)
